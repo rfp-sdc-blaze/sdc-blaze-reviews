@@ -1,0 +1,44 @@
+{
+  "name": "sdc-blaze-reviews",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon --exec ts-node server/index.ts",
+    "build": "tsc",
+    "populate": "nodemon --exec ts-node db/etl.ts",
+    "migrate": "nodemon --exec ts-node db/migrate.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rfp-sdc-blaze/sdc-blaze-reviews.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rfp-sdc-blaze/sdc-blaze-reviews/issues"
+  },
+  "homepage": "https://github.com/rfp-sdc-blaze/sdc-blaze-reviews#readme",
+  "dependencies": {
+    "@types/pg": "^8.6.5",
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1",
+    "node-postgres": "^0.6.2",
+    "pg": "^8.7.3",
+    "pg-format": "^1.0.4"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.13",
+    "@types/node": "^17.0.41",
+    "@types/pg-format": "^1.0.2",
+    "@typescript-eslint/eslint-plugin": "^5.27.1",
+    "@typescript-eslint/parser": "^5.27.1",
+    "eslint": "^8.17.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "nodemon": "^2.0.16",
+    "prettier": "^2.6.2",
+    "ts-node": "^10.8.1",
+    "typescript": "^4.7.3"
+  }
+}
