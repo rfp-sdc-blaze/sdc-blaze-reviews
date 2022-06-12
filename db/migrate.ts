@@ -54,22 +54,22 @@ const readline = require('readline').createInterface({
   const client = await pool.connect();
 
   try {
-    console.log(logT(), 'Adding indices to reviews tables');
-    await pool.query(
-      `CREATE INDEX reviews_indx ON reviews.reviews (product_id);`
-    );
-    console.log(logT(), 'Adding indices to products tables at products.id');
-    await pool.query(
-      `CREATE UNIQUE INDEX products_indx ON reviews.products (id);`
-    );
-    console.log('Adding indices reviews.characteristics_reviews_csv tables');
-    await pool.query(
-      `CREATE INDEX characteristics_reviews_indx ON reviews.characteristics_reviews_csv (product_id);`
-    );
-    console.log('Adding indices reviews.characteristics_reviews_csv tables');
-    await pool.query(
-      `CREATE INDEX characteristics_indx ON reviews.characteristics_csv (id);`
-    );
+    //console.log(logT(), 'Adding indices to reviews tables');
+    // await pool.query(
+    //   `CREATE INDEX reviews_indx ON reviews.reviews (product_id);`
+    // );
+    // console.log(logT(), 'Adding indices to products tables at products.id');
+    // await pool.query(
+    //   `CREATE UNIQUE INDEX products_indx ON reviews.products (id);`
+    // );
+    // console.log('Adding indices reviews.characteristics_reviews_csv tables');
+    // await pool.query(
+    //   `CREATE INDEX characteristics_reviews_indx ON reviews.characteristics_reviews_csv (product_id);`
+    // );
+    // console.log('Adding indices reviews.characteristics_reviews_csv tables');
+    // await pool.query(
+    //   `CREATE INDEX characteristics_indx ON reviews.characteristics_csv (id);`
+    // );
     console.log(
       logT(),
       'Updating characteristics reviews table to include name...'
@@ -237,13 +237,13 @@ const readline = require('readline').createInterface({
     );
     // product_Id num_1_stars num_reviews total_characteristics
 
-    console.log(logT(), 'Adding foreign keys and setting timestamps...');
-    await pool.query(
-      `ALTER TABLE reviews.photos
-       ADD CONSTRAINT fk_review_photos_reviews
-       FOREIGN KEY ( review_id )
-       REFERENCES "reviews".reviews( id );`
-    );
+    // console.log(logT(), 'Adding foreign keys and setting timestamps...');
+    // await pool.query(
+    //   `ALTER TABLE reviews.photos
+    //    ADD CONSTRAINT fk_review_photos_reviews
+    //    FOREIGN KEY ( review_id )
+    //    REFERENCES "reviews".reviews( id );`
+    // );
 
     await pool.query(
       `ALTER TABLE reviews.reviews
