@@ -1,7 +1,6 @@
 // const pool = require('./db').pool;
 require('dotenv').config();
 import { Client, Pool } from 'pg';
-require('console-log-timestamp')('America/Los_Angeles');
 
 // async function clearAndMake() {
 //   console.log('About to migrate from CSV clones to optimized Schema');
@@ -32,6 +31,9 @@ const pool = new Pool({
 //   console.error('Unexpected error on idle client', error);
 //   process.exit(-1);
 // });
+const logT = () => {
+  return new Date().toLocaleString().split(' ').slice(1).join(' ');
+};
 
 const readline = require('readline').createInterface({
   input: process.stdin,
@@ -52,11 +54,11 @@ const readline = require('readline').createInterface({
   const client = await pool.connect();
 
   try {
-    console.log('Adding indices to reviews tables');
+    console.log(logT(), 'Adding indices to reviews tables');
     await pool.query(
       `CREATE INDEX reviews_indexses ON reviews.reviews (product_id);`
     );
-    console.log('Adding indices to products tables at products.id');
+    console.log(logT(), 'Adding indices to products tables at products.id');
     await pool.query(
       `CREATE UNIQUE INDEX products_indexses ON reviews.products (id);`
     );
@@ -64,7 +66,10 @@ const readline = require('readline').createInterface({
     await pool.query(
       `CREATE INDEX characteristics_indexses ON reviews.characteristics_reviews_csv (product_id);`
     );
-    console.log('Updating characteristics reviews table to include name...');
+    console.log(
+      logT(),
+      'Updating characteristics reviews table to include name...'
+    );
     await pool.query(
       `UPDATE reviews.characteristics_reviews_csv
           SET name = reviews.characteristics_csv.name,
@@ -72,7 +77,7 @@ const readline = require('readline').createInterface({
           FROM reviews.characteristics_csv
           WHERE reviews.characteristics_reviews_csv.characteristic_id = reviews.characteristics_csv.id;`
     );
-    console.log('Updating reviews count for products table');
+    console.log(logT(), 'Updating reviews count for products table');
     await pool.query(
       `UPDATE reviews.products
        SET num_reviews =
@@ -81,7 +86,7 @@ const readline = require('readline').createInterface({
           WHERE rr.product_id = reviews.products.id)`
     );
 
-    console.log('Updating star counts');
+    console.log(logT(), 'Updating star counts');
     await pool.query(
       `UPDATE reviews.products
        SET num_1_stars =
@@ -136,7 +141,7 @@ const readline = require('readline').createInterface({
           AND rr.recommended = true);`
     );
 
-    console.log('Updating fitTotal metadata...');
+    console.log(logT(), 'Updating fitTotal metadata...');
     await pool.query(
       `UPDATE reviews.products
        SET fit_total =
@@ -146,7 +151,7 @@ const readline = require('readline').createInterface({
           AND rc.name = 'Fit');`
     );
 
-    console.log('Updating widthTotal metadata...');
+    console.log(logT(), 'Updating widthTotal metadata...');
     await pool.query(
       `UPDATE reviews.products
        SET width_total =
@@ -156,7 +161,7 @@ const readline = require('readline').createInterface({
           AND rc.name = 'Width');`
     );
 
-    console.log('Updating lengthTotal metadata...');
+    console.log(logT(), 'Updating lengthTotal metadata...');
     await pool.query(
       `UPDATE reviews.products
        SET length_total =
@@ -166,7 +171,7 @@ const readline = require('readline').createInterface({
           AND rc.name = 'Length');`
     );
 
-    console.log('Updating comfortTotal metadata...');
+    console.log(logT(), 'Updating comfortTotal metadata...');
     await pool.query(
       `UPDATE reviews.products
        SET comfort_total =
@@ -176,7 +181,7 @@ const readline = require('readline').createInterface({
           AND rc.name = 'Comfort');`
     );
 
-    console.log('Updating qualityTotal metadata...');
+    console.log(logT(), 'Updating qualityTotal metadata...');
     await pool.query(
       `UPDATE reviews.products
        SET quality_total =
@@ -186,7 +191,7 @@ const readline = require('readline').createInterface({
           AND rc.name = 'Quality');`
     );
 
-    console.log('Updating fitID metadata...');
+    console.log(logT(), 'Updating fitID metadata...');
     await pool.query(
       `UPDATE reviews.products
        SET fit_id =
@@ -195,7 +200,7 @@ const readline = require('readline').createInterface({
           WHERE rc.product_id = reviews.products.id
           AND rc.name = 'Fit');`
     );
-    console.log('Updating widthID metadata...');
+    console.log(logT(), 'Updating widthID metadata...');
     await pool.query(
       `UPDATE reviews.products
        SET width_id =
@@ -204,7 +209,7 @@ const readline = require('readline').createInterface({
           WHERE rc.product_id = reviews.products.id
           AND rc.name = 'Width');`
     );
-    console.log('Updating lengthID metadata...');
+    console.log(logT(), 'Updating lengthID metadata...');
     await pool.query(
       `UPDATE reviews.products
        SET length_id =
@@ -213,7 +218,7 @@ const readline = require('readline').createInterface({
           WHERE rc.product_id = reviews.products.id
           AND rc.name = 'Length');`
     );
-    console.log('Updating qualityID metadata...');
+    console.log(logT(), 'Updating qualityID metadata...');
     await pool.query(
       `UPDATE reviews.products
        SET quality_id =
@@ -222,7 +227,7 @@ const readline = require('readline').createInterface({
           WHERE rc.product_id = reviews.products.id
           AND rc.name = 'Quality');`
     );
-    console.log('Updating characteristics metadata...');
+    console.log(logT(), 'Updating characteristics metadata...');
     await pool.query(
       `UPDATE reviews.products
        SET comfort_id =
@@ -233,22 +238,22 @@ const readline = require('readline').createInterface({
     );
     // product_Id num_1_stars num_reviews total_characteristics
 
-    // console.log('Adding foreign keys and setting timestamps...');
-    // await pool.query(
-    //   `ALTER TABLE reviews.photos
-    //    ADD CONSTRAINT fk_review_photos_reviews
-    //    FOREIGN KEY ( review_id )
-    //    REFERENCES "reviews".reviews( id );`
-    // );
+    console.log(logT(), 'Adding foreign keys and setting timestamps...');
+    await pool.query(
+      `ALTER TABLE reviews.photos
+       ADD CONSTRAINT fk_review_photos_reviews
+       FOREIGN KEY ( review_id )
+       REFERENCES "reviews".reviews( id );`
+    );
 
-    // await pool.query(
-    //   `ALTER TABLE reviews.reviews
-    //    ALTER COLUMN created_at TYPE timestamp(3)
-    //    USING to_timestamp(created_at / 1000.0),
-    //    ALTER COLUMN created_at SET DEFAULT LOCALTIMESTAMP(3);`
-    // );
+    await pool.query(
+      `ALTER TABLE reviews.reviews
+       ALTER COLUMN created_at TYPE timestamp(3)
+       USING to_timestamp(created_at / 1000.0),
+       ALTER COLUMN created_at SET DEFAULT LOCALTIMESTAMP(3);`
+    );
 
-    console.log('Done.');
+    console.log(logT(), 'Done.');
     process.exit();
   } finally {
     client.release();

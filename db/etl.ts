@@ -1,7 +1,6 @@
 require('dotenv').config();
 const format = require('pg-format');
 import { Client, Pool } from 'pg';
-require('console-log-timestamp')('America/Los_Angeles');
 
 // async function clearAndMake() {
 //   console.log('About to clear databases and remake database/tables');
@@ -36,7 +35,9 @@ const pool = new Pool({
 //   console.error;
 //   process.exit(-1);
 // });
-
+const logT = () => {
+  return new Date().toLocaleString().split(' ').slice(1).join(' ');
+};
 const readline = require('readline').createInterface({
   input: process.stdin,
   output: process.stdout
@@ -75,13 +76,13 @@ const readline = require('readline').createInterface({
   }
   const client = await pool.connect();
   try {
-    console.log('Deleting existing schema...');
+    console.log(logT(), 'Deleting existing schema...');
     await client.query(`DROP SCHEMA if exists reviews CASCADE;`);
 
-    console.log('Creating new schema...');
+    console.log(logT(), 'Creating new schema...');
     await client.query(`CREATE SCHEMA reviews;`);
 
-    console.log('Creating reviews table...');
+    console.log(logT(), 'Creating reviews table...');
     await client.query(
       `CREATE  TABLE if not exists reviews.reviews (
         id                   integer  NOT NULL  ,
@@ -100,7 +101,7 @@ const readline = require('readline').createInterface({
        );`
     );
 
-    console.log('Creating meta table...');
+    console.log(logT(), 'Creating meta table...');
     await client.query(
       `CREATE  TABLE if not exists reviews.products (
         id                   integer  NOT NULL  ,
@@ -125,7 +126,7 @@ const readline = require('readline').createInterface({
        );`
     );
 
-    console.log('Creating photos table...');
+    console.log(logT(), 'Creating photos table...');
     await client.query(
       `CREATE  TABLE if not exists reviews.photos (
         id                   integer  NOT NULL  ,
@@ -133,7 +134,7 @@ const readline = require('readline').createInterface({
         url                  varchar  NOT NULL);`
     );
 
-    console.log('Creating characteristics table...');
+    console.log(logT(), 'Creating characteristics table...');
     await client.query(
       `CREATE TABLE if not exists reviews.characteristics_csv (
         id                   integer  NOT NULL  ,
@@ -141,7 +142,7 @@ const readline = require('readline').createInterface({
         name                 varchar  NOT NULL);`
     );
 
-    console.log('Creating characteristics reviews table...');
+    console.log(logT(), 'Creating characteristics reviews table...');
     await client.query(
       `CREATE TABLE if not exists reviews.characteristics_reviews_csv (
         id                   integer  NOT NULL  ,
@@ -152,7 +153,7 @@ const readline = require('readline').createInterface({
         name                 varchar);`
     );
 
-    console.log('Creating temporary product table...');
+    console.log(logT(), 'Creating temporary product table...');
     await pool.query(
       `CREATE TABLE if not exists reviews.temp (
           id  integer,
@@ -170,7 +171,7 @@ const readline = require('readline').createInterface({
        FROM reviews.temp;`
     );
 
-    console.log('Copying product ids in to temporary table...');
+    console.log(logT(), 'Copying product ids in to temporary table...');
     await pool.query(
       `COPY reviews.temp (id, name, slogan, description, category, default_price)
        FROM '/home/tannerhebert/hackreactorhub/SDC/CSV_FILES/product.csv'
@@ -178,12 +179,15 @@ const readline = require('readline').createInterface({
        CSV HEADER;`
     );
 
-    console.log('Copying from temp to products');
+    console.log(logT(), 'Copying from temp to products');
     await pool.query(
       `INSERT into reviews.products (id) SELECT id FROM reviews.temp;`
     );
     await pool.query(`DROP TABLE reviews.temp;`);
-    console.log('Copying characteristics csv into characteristics table...');
+    console.log(
+      logT(),
+      'Copying characteristics csv into characteristics table...'
+    );
     await client.query(
       `COPY reviews.characteristics_csv (id, product_id, name)
        FROM '/home/tannerhebert/hackreactorhub/SDC/CSV_FILES/characteristics.csv'
@@ -191,7 +195,7 @@ const readline = require('readline').createInterface({
        CSV HEADER;`
     );
 
-    console.log('Copying characteristic reviews csv into cr table...');
+    console.log(logT(), 'Copying characteristic reviews csv into cr table...');
     await client.query(
       `COPY reviews.characteristics_reviews_csv (
          id, characteristic_id, review_id, value
@@ -201,7 +205,7 @@ const readline = require('readline').createInterface({
        CSV HEADER;`
     );
 
-    console.log('Copying reviews csv into reviews table...');
+    console.log(logT(), 'Copying reviews csv into reviews table...');
     await client.query(
       `COPY reviews.reviews (
          id, product_id, rating, created_at, summary, body,
@@ -212,7 +216,7 @@ const readline = require('readline').createInterface({
        CSV HEADER;`
     );
 
-    console.log('Copying photos csv into photos table...');
+    console.log(logT(), 'Copying photos csv into photos table...');
     await client.query(
       `COPY reviews.photos (id, review_id, url)
        FROM '/home/tannerhebert/hackreactorhub/SDC/CSV_FILES/reviews_photos.csv'
