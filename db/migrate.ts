@@ -56,15 +56,19 @@ const readline = require('readline').createInterface({
   try {
     console.log(logT(), 'Adding indices to reviews tables');
     await pool.query(
-      `CREATE INDEX reviews_indexses ON reviews.reviews (product_id);`
+      `CREATE INDEX reviews_indx ON reviews.reviews (product_id);`
     );
     console.log(logT(), 'Adding indices to products tables at products.id');
     await pool.query(
-      `CREATE UNIQUE INDEX products_indexses ON reviews.products (id);`
+      `CREATE UNIQUE INDEX products_indx ON reviews.products (id);`
     );
     console.log('Adding indices reviews.characteristics_reviews_csv tables');
     await pool.query(
-      `CREATE INDEX characteristics_indexses ON reviews.characteristics_reviews_csv (product_id);`
+      `CREATE INDEX characteristics_reviews_indx ON reviews.characteristics_reviews_csv (product_id);`
+    );
+    console.log('Adding indices reviews.characteristics_reviews_csv tables');
+    await pool.query(
+      `CREATE INDEX characteristics_indx ON reviews.characteristics_csv (id);`
     );
     console.log(
       logT(),
@@ -193,48 +197,43 @@ const readline = require('readline').createInterface({
 
     console.log(logT(), 'Updating fitID metadata...');
     await pool.query(
-      `UPDATE reviews.products
-       SET fit_id =
-         (SELECT sum(value)
-          FROM reviews.characteristics_reviews_csv as rc
-          WHERE rc.product_id = reviews.products.id
-          AND rc.name = 'Fit');`
+      `UPDATE reviews.products rp
+       SET fit_id = rc.id
+          FROM reviews.characteristics_csv rc
+          WHERE rc.product_id = rp.id
+          AND rc.name = 'Fit';`
     );
     console.log(logT(), 'Updating widthID metadata...');
     await pool.query(
-      `UPDATE reviews.products
-       SET width_id =
-         (SELECT sum(value)
-          FROM reviews.characteristics_reviews_csv as rc
-          WHERE rc.product_id = reviews.products.id
-          AND rc.name = 'Width');`
+      `UPDATE reviews.products rp
+       SET width_id = rc.id
+          FROM reviews.characteristics_csv rc
+          WHERE rc.product_id = rp.id
+          AND rc.name = 'Width';`
     );
     console.log(logT(), 'Updating lengthID metadata...');
     await pool.query(
-      `UPDATE reviews.products
-       SET length_id =
-         (SELECT sum(value)
-          FROM reviews.characteristics_reviews_csv as rc
-          WHERE rc.product_id = reviews.products.id
-          AND rc.name = 'Length');`
+      `UPDATE reviews.products rp
+       SET length_id = rc.id
+          FROM reviews.characteristics_csv rc
+          WHERE rc.product_id = rp.id
+          AND rc.name = 'Length';`
     );
     console.log(logT(), 'Updating qualityID metadata...');
     await pool.query(
-      `UPDATE reviews.products
-       SET quality_id =
-         (SELECT sum(value)
-          FROM reviews.characteristics_reviews_csv as rc
-          WHERE rc.product_id = reviews.products.id
-          AND rc.name = 'Quality');`
+      `UPDATE reviews.products rp
+       SET quality_id = rc.id
+          FROM reviews.characteristics_csv rc
+          WHERE rc.product_id = rp.id
+          AND rc.name = 'Quality';`
     );
     console.log(logT(), 'Updating characteristics metadata...');
     await pool.query(
-      `UPDATE reviews.products
-       SET comfort_id =
-         (SELECT sum(value)
-          FROM reviews.characteristics_reviews_csv as rc
-          WHERE rc.product_id = reviews.products.id
-          AND rc.name = 'Comfort');`
+      `UPDATE reviews.products rp
+       SET comfort_id = rc.id
+          FROM reviews.characteristics_csv rc
+          WHERE rc.product_id = rp.id
+          AND rc.name = 'Comfort';`
     );
     // product_Id num_1_stars num_reviews total_characteristics
 
