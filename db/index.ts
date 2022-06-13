@@ -48,6 +48,7 @@ export async function getProductReview(
              'product', $1::integer,
              'page', $4::integer,
              'count', $2::integer,
+             'offset', $3::integer,
              'results',
                 (SELECT json_agg(t) FROM ( SELECT json_build_object(
                                                                       'id', reviews.reviews.id,
@@ -58,14 +59,14 @@ export async function getProductReview(
                                                                       'body', 'body',
                                                                       'date', 'date',
                                                                       'review_name', 'reviewer_name',
-                                                                      'helpfulness', 'helpfulness') FROM reviews.reviews WHERE reviews.product_id = $1)as t WHERE reviews.product_id =$1)
-                        
-                                                ;`,
+                                                                      'helpfulness', 'helpfulness') FROM reviews.reviews WHERE reviews.product_id = $1) t 
+                                                                      )
+                                                                      );`,
 
       [productId, count, offset, page]
     );
     await client.end();
-    return review;
+    return review.rows[0];
   } catch (e) {
     console.error(e);
     return false;

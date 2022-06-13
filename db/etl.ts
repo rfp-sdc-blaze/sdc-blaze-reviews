@@ -85,7 +85,7 @@ const readline = require('readline').createInterface({
     console.log(logT(), 'Creating reviews table...');
     await client.query(
       `CREATE  TABLE if not exists reviews.reviews (
-        id                   integer  NOT NULL  ,
+        id                   serial   ,
         product_id           integer  NOT NULL  ,
         rating               smallint  NOT NULL  ,
         created_at           bigint   NOT NULL   ,
