@@ -1,4 +1,6 @@
 import { Client, Pool } from 'pg';
+import { string } from 'pg-format';
+import { Serializer } from 'v8';
 
 interface Photo {
   id: number;
@@ -26,12 +28,89 @@ interface ReviewHead {
   count: number;
   results: DetailReview[];
 }
-export async function getProductReview(
-  productId: number,
-  count: number,
-  page: number,
-  sort: string
-): Promise<ReviewHead | false> {
+// export async function getProductReview(
+//   productId: number,
+//   count: number,
+//   page: number,
+//   sort: string
+// ): Promise<ReviewHead | false> {
+//   const client = new Client({
+//     database: process.env.DATABASE,
+//     user: process.env.USER,
+//     password: process.env.PASSWORD
+//   });
+
+//   try {
+//     await client.connect();
+//     const offset = (page - 1) * count;
+//     const qValues = [count, offset];
+//     const headerRes = await client.query(
+//       'SELECT * FROM reviews.reviews ORDER BY id LIMIT $1 OFFSET $2;',
+//       qValues
+//     );
+//     const reviewsRes = await client.query(
+//       'SELECT [review_id, rating, summary, recommend, response, body, date, reviewer_name, helpfulness] FROM reviews.reviews WHERE product_id = $1;',
+//       [productId]
+//     );
+
+//     const photosRes = await client.query(
+//       'SELECT [id, url] FROM reviews.photos WHERE reviews_id = $1',
+//       [productId]
+//     );
+
+//     const fullReviewRes = {
+//       ...headerRes.rows[0]
+//     }; //
+//     return false;
+//   } catch (e) {
+//     console.error(e);
+//     return false;
+//   }
+// }
+interface ReviewMeta {
+  product_id: number;
+  ratings: Ratings;
+  recommended: number;
+  characteristics: Characteristics;
+}
+interface Ratings {
+  '0': number;
+  '1': number;
+  '2': number;
+  '3': number;
+  '4': number;
+  '5': number;
+}
+interface Characteristics {
+  Fit: Fit;
+  Width: Width;
+  Comfort: Comfort;
+  Quality: Quality;
+  Length: Length;
+}
+interface Fit {
+  id: number;
+  value: number;
+}
+interface Width {
+  id: number;
+  value: number;
+}
+interface Comfort {
+  id: number;
+  value: number;
+}
+interface Quality {
+  id: number;
+  value: number;
+}
+interface Length {
+  id: number;
+  value: number;
+}
+export async function getReviewMeta(
+  productId: number
+): Promise<unknown | false> {
   const client = new Client({
     database: process.env.DATABASE,
     user: process.env.USER,
@@ -40,26 +119,48 @@ export async function getProductReview(
 
   try {
     await client.connect();
-    const offset = (page - 1) * count;
-    const qValues = [count, offset];
-    const headerRes = await client.query(
-      'SELECT * FROM reviews.reviews ORDER BY id LIMIT $1 OFFSET $2;',
-      qValues
-    );
-    const reviewsRes = await client.query(
-      'SELECT [review_id, rating, summary, recommend, response, body, date, reviewer_name, helpfulness] FROM reviews.reviews WHERE product_id = $1;',
+
+    const reviewMeta = await client.query(
+      `SELECT (
+          json_build_object(
+              'product_id', id,
+              'ratings', json_build_object(
+                  '1', num_1_stars,
+                  '2', num_2_stars,
+                  '3', num_3_stars,
+                  '4', num_4_stars,
+                  '5', num_5_stars
+              ),
+              'recommended', num_recommended,
+              'characteristics', json_build_object(
+                  'Fit', json_build_object(
+                      'id', fit_id,
+                      'value', fit_total::float / num_reviews
+                  ),
+                  'Width', json_build_object(
+                      'id', width_id,
+                      'value', width_total::float / num_reviews
+                  ),
+                  'Comfort', json_build_object(
+                      'id', comfort_id,
+                      'value', comfort_total::float / num_reviews
+                  ),
+                  'Quality', json_build_object(
+                      'id', quality_id,
+                      'value', quality_total::float / num_reviews
+                  ),
+                  'Length', json_build_object(
+                      'id', length_id,
+                      'value', length_total::float / num_reviews
+                  )
+              )
+          )
+      )
+      FROM reviews.products WHERE reviews.products.id = $1;`,
       [productId]
     );
-
-    const photosRes = await client.query(
-      'SELECT [id, url] FROM reviews.photos WHERE reviews_id = $1',
-      [productId]
-    );
-
-    const fullReviewRes = {
-      ...headerRes.rows[0]
-    }; //
-    return false;
+    await client.end();
+    return reviewMeta.rows;
   } catch (e) {
     console.error(e);
     return false;

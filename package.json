@@ -7,7 +7,8 @@
     "start": "nodemon --exec ts-node server/index.ts",
     "build": "tsc",
     "populate": "nodemon --exec ts-node db/etl.ts",
-    "migrate": "nodemon --exec ts-node db/migrate.ts"
+    "migrate": "nodemon --exec ts-node db/migrate.ts",
+    "testMeta": "--exec ts-node db/datatest.js"
   },
   "repository": {
     "type": "git",
