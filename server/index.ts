@@ -1,6 +1,6 @@
 require('dotenv').config();
-// import { getProductReview, getReviewMeta } from '../db/index';
-import { getReviewMeta } from '../db/index';
+import { getProductReview, getReviewMeta } from '../db/index';
+// import { getReviewMeta } from '../db/index';
 //import { getReviewMetaJS } from '../db/index.js';
 import express from 'express';
 const PORT = process.env.PORT || 3002;
@@ -19,55 +19,61 @@ enum SortTypes {
   None = 'none'
 }
 
-// //GET route to the reviews object response
-// app.get(`/reviews/`, async (req, res) => {
-//   //These are all catching bad data and returning 400s before any DB queries happen
-//   if (isNaN(Number(req.query.product_id))) {
-//     res.sendStatus(400);
-//     return;
-//   }
-//   const productId = Number(req.query.product_id);
-//   let count = 5;
-//   if ('count' in req.query) {
-//     if (isNaN(Number(req.query.count))) {
-//       res.sendStatus(400);
-//       return;
-//     }
-//     count = Number(req.query.count);
-//   }
-//   let page = 1;
-//   if ('page' in req.query) {
-//     if (isNaN(Number(req.query.page))) {
-//       res.sendStatus(400);
-//       return;
-//     }
-//     page = Number(req.query.page);
-//   }
-//   let sort: SortTypes = SortTypes.None;
-//   if (sort in req.query) {
-//     switch (req.query.sort) {
-//       case SortTypes.Newest:
-//         sort = SortTypes.Newest;
-//         break;
-//       case SortTypes.Relevant:
-//         sort = SortTypes.Relevant;
-//         break;
-//       case SortTypes.Helpful:
-//         sort = SortTypes.Helpful;
-//         break;
-//       default:
-//         res.sendStatus(400);
-//         return;
-//     }
-//   }
-//   //This is the actual call to the DB if the request is appropriately structured
-//   const productReview = await getProductReview(productId, count, page, sort);
-//   if (productReview === false) {
-//     res.sendStatus(400);
-//   } else {
-//     res.send(productReview).status(200);
-//   }
-// });
+//GET route to the reviews object response
+app.get(`/reviews/`, async (req, res) => {
+  //These are all catching bad data and returning 400s before any DB queries happen
+  if (isNaN(Number(req.query.product_id))) {
+    console.log('Broken ID');
+    res.sendStatus(400);
+    return;
+  }
+  const productId = Number(req.query.product_id);
+  let count = 5;
+  if ('count' in req.query) {
+    if (isNaN(Number(req.query.count))) {
+      console.log('broken count');
+      res.sendStatus(400);
+      return;
+    }
+    count = Number(req.query.count);
+  }
+  let page = 1;
+  if ('page' in req.query) {
+    if (isNaN(Number(req.query.page))) {
+      console.log('broken page');
+      res.sendStatus(400);
+      return;
+    }
+    page = Number(req.query.page);
+  }
+  let sort: SortTypes = SortTypes.None;
+  if (sort in req.query) {
+    switch (req.query.sort) {
+      case SortTypes.Newest:
+        sort = SortTypes.Newest;
+        break;
+      case SortTypes.Relevant:
+        sort = SortTypes.Relevant;
+        break;
+      case SortTypes.Helpful:
+        sort = SortTypes.Helpful;
+        break;
+      default:
+        console.log('broken sort');
+        res.sendStatus(400);
+        return;
+    }
+  }
+  const offset = 5;
+
+  //This is the actual call to the DB if the request is appropriately structured
+  const productReview = await getProductReview(productId, count, offset, page);
+  if (productReview === false) {
+    res.sendStatus(400);
+  } else {
+    res.send(productReview).status(200);
+  }
+});
 
 //GET route to the reviews metadata
 

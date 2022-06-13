@@ -28,45 +28,49 @@ interface ReviewHead {
   count: number;
   results: DetailReview[];
 }
-// export async function getProductReview(
-//   productId: number,
-//   count: number,
-//   page: number,
-//   sort: string
-// ): Promise<ReviewHead | false> {
-//   const client = new Client({
-//     database: process.env.DATABASE,
-//     user: process.env.USER,
-//     password: process.env.PASSWORD
-//   });
+export async function getProductReview(
+  productId: number,
+  count: number,
+  page: number,
+  offset: number
+): Promise<unknown | false> {
+  const client = new Client({
+    database: process.env.DATABASE,
+    user: process.env.USER,
+    password: process.env.PASSWORD
+  });
 
-//   try {
-//     await client.connect();
-//     const offset = (page - 1) * count;
-//     const qValues = [count, offset];
-//     const headerRes = await client.query(
-//       'SELECT * FROM reviews.reviews ORDER BY id LIMIT $1 OFFSET $2;',
-//       qValues
-//     );
-//     const reviewsRes = await client.query(
-//       'SELECT [review_id, rating, summary, recommend, response, body, date, reviewer_name, helpfulness] FROM reviews.reviews WHERE product_id = $1;',
-//       [productId]
-//     );
+  try {
+    await client.connect();
+    const review = await client.query(
+      `
+          SELECT json_build_object(
+             'product', $1::integer,
+             'page', $4::integer,
+             'count', $2::integer,
+             'results',
+                (SELECT json_agg(t) FROM ( SELECT json_build_object(
+                                                                      'id', reviews.reviews.id,
+                                                                      'rating', rating,
+                                                                      'summary', summary,
+                                                                      'recommend', 'recommend',
+                                                                      'response', 'response',
+                                                                      'body', 'body',
+                                                                      'date', 'date',
+                                                                      'review_name', 'reviewer_name',
+                                                                      'helpfulness', 'helpfulness') FROM reviews.reviews WHERE reviews.product_id = $1)as t WHERE reviews.product_id =$1)
+                        
+                                                ;`,
 
-//     const photosRes = await client.query(
-//       'SELECT [id, url] FROM reviews.photos WHERE reviews_id = $1',
-//       [productId]
-//     );
-
-//     const fullReviewRes = {
-//       ...headerRes.rows[0]
-//     }; //
-//     return false;
-//   } catch (e) {
-//     console.error(e);
-//     return false;
-//   }
-// }
+      [productId, count, offset, page]
+    );
+    await client.end();
+    return review;
+  } catch (e) {
+    console.error(e);
+    return false;
+  }
+}
 interface ReviewMeta {
   product_id: number;
   ratings: Ratings;
