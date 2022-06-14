@@ -18,16 +18,14 @@ interface SubmittedReview extends Review {
   email: string;
   characteristics: any;
 }
-
+const pool = new Pool({
+  database: process.env.DATABASE,
+  user: process.env.USER,
+  password: process.env.PASSWORD
+});
 export async function addReview(
   body: SubmittedReview
 ): Promise<unknown | false> {
-  const pool = new Pool({
-    database: process.env.DATABASE,
-    user: process.env.USER,
-    password: process.env.PASSWORD
-  });
-
   try {
     //console.log(body.characteristics);
     // INSERT REVIEW
@@ -36,7 +34,7 @@ export async function addReview(
       body.rating,
       body.summary,
       body.body,
-      body.recommended,
+      body.recommend,
       body.name,
       body.email
     ];
@@ -96,7 +94,7 @@ export async function addReview(
 
     let characteristicNames: any = await pool.query(
       `
-        SELECT json_agg(t) FROM (SELECT (name, id) FROM reviews.characteristics rc
+        SELECT json_agg(t) FROM (SELECT (name, id) FROM reviews.characteristics_csv rc
         WHERE rc.product_id = $1) as t;
     `,
       [body.product_id]
@@ -131,10 +129,28 @@ export async function addReview(
     queryString = queryString.slice(0, queryString.length - 2) + '\n';
     queryString += format('WHERE reviews.products.id = %s;', body.product_id);
     console.log(queryString);
-    //await pool.query(queryString);
+    await pool.query(queryString);
     return;
   } catch (error) {
     console.log(error);
     return error;
   }
+}
+
+export async function report(review_id: number) {
+  await pool.query(
+    `UPDATE reviews.reviews 
+     SET reported = NOT reported
+     WHERE reviews.reviews.id = ${review_id}`
+  );
+  return;
+}
+
+export async function helpful(review_id: number) {
+  await pool.query(
+    `UPDATE reviews.reviews 
+     SET helpful = helpful + 1
+     WHERE reviews.reviews.id = ${review_id}`
+  );
+  return;
 }

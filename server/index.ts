@@ -1,6 +1,6 @@
 require('dotenv').config();
 import { getProductReview, getReviewMeta } from '../db/index';
-import { addReview } from '../db/writes';
+import { addReview, report, helpful } from '../db/writes';
 // import { getReviewMeta } from '../db/index';
 //import { getReviewMetaJS } from '../db/index.js';
 import express from 'express';
@@ -22,7 +22,7 @@ enum SortTypes {
 
 //GET route to the reviews object response
 app.get(`/reviews/`, async (req, res) => {
-  //These are all catching bad data and returning 400s before any DB queries happen
+  // These are all catching bad data and returning 400s before any DB queries happen
   if (isNaN(Number(req.query.product_id))) {
     console.log('Broken ID');
     res.sendStatus(400);
@@ -118,6 +118,19 @@ app.post(`/reviews`, async (req, res) => {
   await addReview(req.body);
 
   res.sendStatus(200);
+});
+
+app.put(`/reviews/:review_id/report`, async (req, res) => {
+  const review_id = Number(req.params.review_id);
+  console.log(review_id);
+  await report(review_id);
+  res.sendStatus(204);
+});
+app.put(`/reviews/:review_id/helpful`, async (req, res) => {
+  const review_id = Number(req.params.review_id);
+  console.log(review_id);
+  await helpful(review_id);
+  res.sendStatus(204);
 });
 export const server = app.listen(PORT, (): void => {
   console.log(`Listening on port ${PORT}`);
