@@ -5,6 +5,14 @@ import { Photo, Review, ReviewHead } from '.';
 const format = require('pg-format');
 
 interface SubmittedReview extends Review {
+  review_id: number;
+  rating: number;
+  summary: string;
+  recommended: boolean;
+  response: string;
+  body: string;
+  name: string;
+  helpfulness: number;
   product_id: number;
   photos: Photo[];
   email: string;
@@ -21,19 +29,18 @@ export async function addReview(
   });
 
   try {
-    console.log(body.characteristics);
+    //console.log(body.characteristics);
     // INSERT REVIEW
     const reviewValues = [
       body.product_id,
       body.rating,
       body.summary,
       body.body,
-      body.recommend,
-      body.reviewer_name,
-      body.email,
-      body.characteristics
+      body.recommended,
+      body.name,
+      body.email
     ];
-
+    console.log('inserting into reviews');
     let reviewID = await pool.query(
       `
       INSERT INTO reviews.reviews
@@ -57,6 +64,7 @@ export async function addReview(
     reviewID = reviewID.rows[0].id;
 
     // Insert photos
+    console.log('inserting photos');
     if (body.photos.length) {
       await pool.query(
         `
@@ -68,6 +76,7 @@ export async function addReview(
     }
     // Update metadata
     // num_reviews, star count, num_recommended
+    console.log('updating review nums and recommended');
     await pool.query(
       format(
         `
@@ -98,7 +107,7 @@ export async function addReview(
       (k, i) => characteristicNames[k].row
     );
 
-    console.log(characteristicNames);
+    //console.log(characteristicNames);
 
     let queryString = characteristicNames.reduce((memo: any, char: any) => {
       const charName = char.f1.toLowerCase();

@@ -114,7 +114,7 @@ app.get(`/reviews/meta`, async (req, res) => {
 });
 
 app.post(`/reviews`, async (req, res) => {
-  console.log(req.body);
+  //console.log(req.body);
   await addReview(req.body);
 
   res.sendStatus(200);
