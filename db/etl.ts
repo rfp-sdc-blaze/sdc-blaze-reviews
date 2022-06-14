@@ -85,7 +85,7 @@ const readline = require('readline').createInterface({
     console.log(logT(), 'Creating reviews table...');
     await client.query(
       `CREATE  TABLE if not exists reviews.reviews (
-        id                   serial   ,
+        id                   serial   PRIMARY KEY,
         product_id           integer  NOT NULL  ,
         rating               smallint  NOT NULL  ,
         created_at           bigint   NOT NULL   ,
@@ -96,8 +96,8 @@ const readline = require('readline').createInterface({
         name                 varchar  NOT NULL  ,
         email                varchar  NOT NULL  ,
         response             varchar    ,
-        helpful              integer DEFAULT 0 NOT NULL  ,
-        CONSTRAINT pk_reviews PRIMARY KEY ( id )
+        helpful              integer DEFAULT 0 NOT NULL  
+
        );`
     );
 
@@ -115,11 +115,13 @@ const readline = require('readline').createInterface({
         length_id           integer    ,
         comfort_id          integer    ,
         quality_id          integer    ,
+        size_id             integer     ,
         fit_total            integer     ,
         width_total          integer     ,
         length_total         integer     ,
         comfort_total        integer     ,
         quality_total        integer     ,
+        size_total           integer     ,
         num_reviews          integer DEFAULT 0   ,
         num_recommended      integer DEFAULT 0   ,
         CONSTRAINT pk_products PRIMARY KEY ( id )
@@ -129,7 +131,7 @@ const readline = require('readline').createInterface({
     console.log(logT(), 'Creating photos table...');
     await client.query(
       `CREATE  TABLE if not exists reviews.photos (
-        id                   integer  NOT NULL  ,
+        id                   serial  PRIMARY KEY  ,
         review_id            integer  NOT NULL  ,
         url                  varchar  NOT NULL);`
     );

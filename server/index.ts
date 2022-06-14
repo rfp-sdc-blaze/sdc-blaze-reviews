@@ -1,5 +1,6 @@
 require('dotenv').config();
 import { getProductReview, getReviewMeta } from '../db/index';
+import { addReview } from '../db/writes';
 // import { getReviewMeta } from '../db/index';
 //import { getReviewMetaJS } from '../db/index.js';
 import express from 'express';
@@ -37,7 +38,7 @@ app.get(`/reviews/`, async (req, res) => {
     }
     count = Number(req.query.count);
   }
-  let page = 1;
+  let page = 0;
   if ('page' in req.query) {
     if (isNaN(Number(req.query.page))) {
       console.log('broken page');
@@ -46,7 +47,7 @@ app.get(`/reviews/`, async (req, res) => {
     }
     page = Number(req.query.page);
   }
-  let sort: SortTypes = SortTypes.None;
+  let sort: SortTypes = SortTypes.Helpful;
   if (sort in req.query) {
     switch (req.query.sort) {
       case SortTypes.Newest:
@@ -64,10 +65,17 @@ app.get(`/reviews/`, async (req, res) => {
         return;
     }
   }
-  const offset = 5;
+
+  const offset = (page - 1) * count;
 
   //This is the actual call to the DB if the request is appropriately structured
-  const productReview = await getProductReview(productId, count, offset, page);
+  const productReview = await getProductReview(
+    productId,
+    sort,
+    count,
+    offset,
+    page
+  );
   if (productReview === false) {
     res.sendStatus(400);
   } else {
@@ -103,6 +111,13 @@ app.get(`/reviews/meta`, async (req, res) => {
   } else {
     res.send(reviewMeta).status(200);
   }
+});
+
+app.post(`/reviews`, async (req, res) => {
+  console.log(req.body);
+  await addReview(req.body);
+
+  res.sendStatus(200);
 });
 export const server = app.listen(PORT, (): void => {
   console.log(`Listening on port ${PORT}`);

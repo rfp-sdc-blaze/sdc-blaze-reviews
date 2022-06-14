@@ -2,11 +2,11 @@ import { Client, Pool } from 'pg';
 import { string } from 'pg-format';
 import { Serializer } from 'v8';
 
-interface Photo {
+export interface Photo {
   id: number;
   url: string;
 }
-interface Review {
+export interface Review {
   review_id: number;
   rating: number;
   summary: string;
@@ -18,11 +18,11 @@ interface Review {
   helpfulness: number;
 }
 
-interface DetailReview extends Review {
+export interface DetailReview extends Review {
   photos: Photo[];
 }
 
-interface ReviewHead {
+export interface ReviewHead {
   product: string;
   page: number;
   count: number;
@@ -30,6 +30,7 @@ interface ReviewHead {
 }
 export async function getProductReview(
   productId: number,
+  sort: string,
   count: number,
   page: number,
   offset: number
@@ -42,31 +43,52 @@ export async function getProductReview(
 
   try {
     await client.connect();
-    const review = await client.query(
+    console.log(productId, sort, count, offset, page);
+    const query = await client.query(
       `
-          SELECT json_build_object(
+      SELECT
+         json_build_object(
              'product', $1::integer,
-             'page', $4::integer,
-             'count', $2::integer,
-             'offset', $3::integer,
-             'results',
-                (SELECT json_agg(t) FROM ( SELECT json_build_object(
-                                                                      'id', reviews.reviews.id,
-                                                                      'rating', rating,
-                                                                      'summary', summary,
-                                                                      'recommend', 'recommend',
-                                                                      'response', 'response',
-                                                                      'body', 'body',
-                                                                      'date', 'date',
-                                                                      'review_name', 'reviewer_name',
-                                                                      'helpfulness', 'helpfulness') FROM reviews.reviews WHERE reviews.product_id = $1) t 
-                                                                      )
-                                                                      );`,
+             'page', $5::integer,
+             'count', $3::integer,
+             'results', (
 
-      [productId, count, offset, page]
+              SELECT json_agg(
+                      json_build_object(
+                        'id', reviews.reviews.id,
+                        'rating', rating,
+                        'summary', summary,
+                        'recommend', recommended,
+                        'response', response,
+                        'body', body,
+                        'date', created_at,
+                        'review_name', name,
+                        'helpfulness', helpful,
+                         'photos', ( SELECT
+                          json_agg(
+                            json_build_object(
+                              'id', id,
+                              'url', url
+                            )
+                          )
+                            FROM reviews.photos
+                            WHERE reviews.photos.review_id = reviews.reviews.id
+                        )
+                      )
+                    ) as results
+                      FROM reviews.reviews
+                      WHERE reviews.reviews.product_id = $1
+                      AND reviews.reviews.reported = false
+                      ORDER BY $2
+                      LIMIT $3
+                      OFFSET $4
+           )
+        );
+  `,
+      [productId, sort, count, offset, page]
     );
     await client.end();
-    return review.rows[0];
+    return query.rows[0];
   } catch (e) {
     console.error(e);
     return false;
@@ -165,7 +187,7 @@ export async function getReviewMeta(
       [productId]
     );
     await client.end();
-    return reviewMeta.rows;
+    return reviewMeta.rows[0].json_build_object;
   } catch (e) {
     console.error(e);
     return false;

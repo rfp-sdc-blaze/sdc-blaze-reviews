@@ -54,22 +54,42 @@ const readline = require('readline').createInterface({
   const client = await pool.connect();
 
   try {
-    //console.log(logT(), 'Adding indices to reviews tables');
-    // await pool.query(
-    //   `CREATE INDEX reviews_indx ON reviews.reviews (product_id);`
-    // );
-    // console.log(logT(), 'Adding indices to products tables at products.id');
-    // await pool.query(
-    //   `CREATE UNIQUE INDEX products_indx ON reviews.products (id);`
-    // );
-    // console.log('Adding indices reviews.characteristics_reviews_csv tables');
-    // await pool.query(
-    //   `CREATE INDEX characteristics_reviews_indx ON reviews.characteristics_reviews_csv (product_id);`
-    // );
-    // console.log('Adding indices reviews.characteristics_reviews_csv tables');
-    // await pool.query(
-    //   `CREATE INDEX characteristics_indx ON reviews.characteristics_csv (id);`
-    // );
+    console.log(logT(), 'Adding indices to reviews tables');
+    await pool.query(
+      `CREATE INDEX reviews_indx ON reviews.reviews (product_id);`
+    );
+    console.log(logT(), 'Adding indices to products tables at products.id');
+    await pool.query(
+      `CREATE UNIQUE INDEX products_indx ON reviews.products (id);`
+    );
+    console.log('Adding indices reviews.characteristics_reviews_csv tables');
+    await pool.query(
+      `CREATE INDEX characteristics_reviews_indx ON reviews.characteristics_reviews_csv (product_id);`
+    );
+    console.log('Adding indices reviews.characteristics_reviews_csv tables');
+    await pool.query(
+      `CREATE INDEX characteristics_indx ON reviews.characteristics_csv (id);`
+    );
+    console.log('Adding indices reviews.photos tables');
+    await pool.query(`CREATE INDEX photos_indx ON reviews.photos (id);`);
+
+    console.log('Adding indices reviews.photos tables');
+    await pool.query(
+      `CREATE INDEX photos_review_indx ON reviews.photos (review_id);`
+    );
+    await pool.query(
+      `CREATE INDEX reviews_created_idx ON reviews.reviews(created_at ASC);`
+    );
+
+    await pool.query(
+      `CREATE INDEX reviews_helpfullnes_idx ON reviews.reviews(helpful DESC);`
+    );
+
+    console.log('Updating the serial IDs for reviews and photos...');
+    await pool.query(`
+    SELECT setval('reviews.reviews_id_seq', (SELECT MAX(id) FROM reviews.reviews)+1);
+    SELECT setval('reviews.photos_id_seq', (SELECT MAX(id) FROM reviews.photos)+1);
+  `);
     console.log(
       logT(),
       'Updating characteristics reviews table to include name...'
@@ -194,6 +214,15 @@ const readline = require('readline').createInterface({
           WHERE rc.product_id = reviews.products.id
           AND rc.name = 'Quality');`
     );
+    console.log(logT(), 'Updating qualityTotal metadata...');
+    await pool.query(
+      `UPDATE reviews.products
+       SET size_total =
+         (SELECT sum(value)
+          FROM reviews.characteristics_reviews_csv as rc
+          WHERE rc.product_id = reviews.products.id
+          AND rc.name = 'Size');`
+    );
 
     console.log(logT(), 'Updating fitID metadata...');
     await pool.query(
@@ -235,15 +264,23 @@ const readline = require('readline').createInterface({
           WHERE rc.product_id = rp.id
           AND rc.name = 'Comfort';`
     );
+    console.log(logT(), 'Updating characteristics metadata...');
+    await pool.query(
+      `UPDATE reviews.products rp
+       SET size_id = rc.id
+          FROM reviews.characteristics_csv rc
+          WHERE rc.product_id = rp.id
+          AND rc.name = 'Size';`
+    );
     // product_Id num_1_stars num_reviews total_characteristics
 
-    // console.log(logT(), 'Adding foreign keys and setting timestamps...');
-    // await pool.query(
-    //   `ALTER TABLE reviews.photos
-    //    ADD CONSTRAINT fk_review_photos_reviews
-    //    FOREIGN KEY ( review_id )
-    //    REFERENCES "reviews".reviews( id );`
-    // );
+    console.log(logT(), 'Adding foreign keys and setting timestamps...');
+    await pool.query(
+      `ALTER TABLE reviews.photos
+       ADD CONSTRAINT fk_review_photos_reviews
+       FOREIGN KEY ( review_id )
+       REFERENCES "reviews".reviews( id );`
+    );
 
     await pool.query(
       `ALTER TABLE reviews.reviews
