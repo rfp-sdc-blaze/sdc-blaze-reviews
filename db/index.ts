@@ -38,7 +38,7 @@ export async function getProductReview(
   const client = new Client({
     database: process.env.DATABASE,
     user: process.env.USER,
-    password: process.env.PASSWORD
+    password: process.env.PASSWORD,
     host: process.env.HOST,
     port: Number(process.env.PORT)
   });
@@ -143,7 +143,7 @@ export async function getReviewMeta(
   const client = new Client({
     database: process.env.DATABASE,
     user: process.env.USER,
-    password: process.env.PASSWORD
+    password: process.env.PASSWORD,
     host: process.env.HOST,
     port: Number(process.env.PORT)
   });
