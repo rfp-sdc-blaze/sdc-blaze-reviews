@@ -1,16 +1,10 @@
 require('dotenv').config();
 import { getProductReview, getReviewMeta } from '../db/index';
 import { addReview, report, helpful } from '../db/writes';
-// import { getReviewMeta } from '../db/index';
-//import { getReviewMetaJS } from '../db/index.js';
 import express from 'express';
+import { getClient } from './pooling';
 const PORT = process.env.PORT || 3002;
 const app = express();
-
-// app.listen(3001, ():void => {
-//     console.log("started");
-// });
-
 app.use(express.json());
 
 enum SortTypes {
@@ -19,10 +13,9 @@ enum SortTypes {
   Relevant = 'relevant',
   None = 'none'
 }
-
+getClient();
 //GET route to the reviews object response
 app.get(`/reviews/`, async (req, res) => {
-  // These are all catching bad data and returning 400s before any DB queries happen
   if (isNaN(Number(req.query.product_id))) {
     console.log('Broken ID');
     res.sendStatus(400);
@@ -83,22 +76,6 @@ app.get(`/reviews/`, async (req, res) => {
   }
 });
 
-//GET route to the reviews metadata
-
-// app.get(`/reviews/meta`, async (req, res) => {
-//   if (isNaN(Number(req.query.product_id))) {
-//     res.sendStatus(400);
-//     return;
-//   }
-//   const productId = Number(req.query.product_id);
-//   const reviewMeta = await getReviewMeta(productId);
-//   if (reviewMeta === false) {
-//     res.sendStatus(400);
-//   } else {
-//     res.send(reviewMeta).status(200);
-//   }
-// });
-
 app.get(`/reviews/meta`, async (req, res) => {
   if (isNaN(Number(req.query.product_id))) {
     res.sendStatus(400);
@@ -114,7 +91,6 @@ app.get(`/reviews/meta`, async (req, res) => {
 });
 
 app.post(`/reviews`, async (req, res) => {
-  //console.log(req.body);
   await addReview(req.body);
 
   res.sendStatus(200);
@@ -122,13 +98,11 @@ app.post(`/reviews`, async (req, res) => {
 
 app.put(`/reviews/:review_id/report`, async (req, res) => {
   const review_id = Number(req.params.review_id);
-  //console.log(review_id);
   await report(review_id);
   res.sendStatus(204);
 });
 app.put(`/reviews/:review_id/helpful`, async (req, res) => {
   const review_id = Number(req.params.review_id);
-  //.console.log(review_id);
   await helpful(review_id);
   res.sendStatus(204);
 });

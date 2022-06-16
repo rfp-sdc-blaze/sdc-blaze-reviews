@@ -2,6 +2,7 @@ import { Client, Pool } from 'pg';
 import { string } from 'pg-format';
 import { Serializer } from 'v8';
 import { Photo, Review, ReviewHead } from '.';
+import { pool } from '../server/pooling';
 const format = require('pg-format');
 
 interface SubmittedReview extends Review {
@@ -18,13 +19,7 @@ interface SubmittedReview extends Review {
   email: string;
   characteristics: any;
 }
-const pool = new Pool({
-  database: process.env.DATABASE,
-  user: process.env.USER,
-  password: process.env.PASSWORD,
-  host: process.env.HOST,
-  port: Number(process.env.PORT)
-});
+
 export async function addReview(
   body: SubmittedReview
 ): Promise<unknown | false> {
@@ -141,7 +136,7 @@ export async function addReview(
 
 export async function report(review_id: number) {
   await pool.query(
-    `UPDATE reviews.reviews 
+    `UPDATE reviews.reviews
      SET reported = NOT reported
      WHERE reviews.reviews.id = ${review_id}`
   );
@@ -150,7 +145,7 @@ export async function report(review_id: number) {
 
 export async function helpful(review_id: number) {
   await pool.query(
-    `UPDATE reviews.reviews 
+    `UPDATE reviews.reviews
      SET helpful = helpful + 1
      WHERE reviews.reviews.id = ${review_id}`
   );

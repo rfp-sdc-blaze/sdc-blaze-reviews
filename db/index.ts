@@ -1,7 +1,7 @@
-import { Client, Pool } from 'pg';
+//import { Client, Pool } from 'pg';
 import { string } from 'pg-format';
 import { Serializer } from 'v8';
-
+import { pool } from '../server/pooling';
 export interface Photo {
   id: number;
   url: string;
@@ -28,6 +28,7 @@ export interface ReviewHead {
   count: number;
   results: DetailReview[];
 }
+
 export async function getProductReview(
   productId: number,
   sort: string,
@@ -35,18 +36,8 @@ export async function getProductReview(
   page: number,
   offset: number
 ): Promise<unknown | false> {
-  const client = new Client({
-    database: process.env.DATABASE,
-    user: process.env.USER,
-    password: process.env.PASSWORD,
-    host: process.env.HOST,
-    port: Number(process.env.PORT)
-  });
-
   try {
-    await client.connect();
-    console.log(productId, sort, count, offset, page);
-    const query = await client.query(
+    const query = await pool.query(
       `
       SELECT
          json_build_object(
@@ -89,7 +80,6 @@ export async function getProductReview(
   `,
       [productId, sort, count, offset, page]
     );
-    await client.end();
     return query.rows[0];
   } catch (e) {
     console.error(e);
@@ -140,18 +130,8 @@ interface Length {
 export async function getReviewMeta(
   productId: number
 ): Promise<unknown | false> {
-  const client = new Client({
-    database: process.env.DATABASE,
-    user: process.env.USER,
-    password: process.env.PASSWORD,
-    host: process.env.HOST,
-    port: Number(process.env.PORT)
-  });
-
   try {
-    await client.connect();
-
-    const reviewMeta = await client.query(
+    const reviewMeta = await pool.query(
       `SELECT (
           json_build_object(
               'product_id', id,
@@ -190,7 +170,6 @@ export async function getReviewMeta(
       FROM reviews.products WHERE reviews.products.id = $1;`,
       [productId]
     );
-    await client.end();
     return reviewMeta.rows[0].json_build_object;
   } catch (e) {
     console.error(e);
