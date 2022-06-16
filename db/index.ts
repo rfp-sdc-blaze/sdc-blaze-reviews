@@ -38,7 +38,8 @@ export async function getProductReview(
   const client = new Client({
     database: process.env.DATABASE,
     user: process.env.USER,
-    password: process.env.PASSWORD
+    password: process.env.PASSWORD,
+    host: 'ec2-34-212-170-180.us-west-2.compute.amazonaws.com'
   });
 
   try {

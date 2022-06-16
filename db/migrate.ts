@@ -23,6 +23,7 @@ import { Client, Pool } from 'pg';
 // }
 const pool = new Pool({
   user: process.env.USER,
+  host: 'ec2-34-212-170-180.us-west-2.compute.amazonaws.com',
   password: process.env.PASSWORD,
   database: process.env.DATABASE
 });
