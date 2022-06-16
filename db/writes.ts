@@ -22,7 +22,7 @@ const pool = new Pool({
   database: process.env.DATABASE,
   user: process.env.USER,
   password: process.env.PASSWORD,
-  host: 'ec2-34-212-170-180.us-west-2.compute.amazonaws.com'
+  host: process.env.HOST
 });
 export async function addReview(
   body: SubmittedReview
