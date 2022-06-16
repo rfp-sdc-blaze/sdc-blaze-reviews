@@ -22,7 +22,8 @@ const pool = new Pool({
   database: process.env.DATABASE,
   user: process.env.USER,
   password: process.env.PASSWORD,
-  host: process.env.HOST
+  host: process.env.HOST,
+  port: Number(process.env.PORT)
 });
 export async function addReview(
   body: SubmittedReview

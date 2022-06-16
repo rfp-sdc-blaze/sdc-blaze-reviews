@@ -39,7 +39,8 @@ export async function getProductReview(
     database: process.env.DATABASE,
     user: process.env.USER,
     password: process.env.PASSWORD,
-    host: process.env.HOST
+    host: process.env.HOST,
+    port: Number(process.env.PORT)
   });
 
   try {
