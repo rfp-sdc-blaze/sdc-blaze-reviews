@@ -98,9 +98,7 @@ app.get(`/reviews/`, async (req, res) => {
 //     res.send(reviewMeta).status(200);
 //   }
 // });
-app.get('/loaderio-a320c0a9a39c08e434b772b66c2d9c59', (req, res) => {
-  res.status(200).send('loaderio-a320c0a9a39c08e434b772b66c2d9c59');
-});
+
 app.get(`/reviews/meta`, async (req, res) => {
   if (isNaN(Number(req.query.product_id))) {
     res.sendStatus(400);
@@ -133,6 +131,10 @@ app.put(`/reviews/:review_id/helpful`, async (req, res) => {
   //.console.log(review_id);
   await helpful(review_id);
   res.sendStatus(204);
+});
+
+app.get('/loaderio-6a14faf9c059a162338a3bfbd2e58be4', (req, res) => {
+  res.status(200).send('loaderio-6a14faf9c059a162338a3bfbd2e58be4');
 });
 export const server = app.listen(PORT, (): void => {
   console.log(`Listening on port ${PORT}`);
