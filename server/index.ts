@@ -107,8 +107,8 @@ app.put(`/reviews/:review_id/helpful`, async (req, res) => {
   res.sendStatus(204);
 });
 
-app.get('/loaderio-6a14faf9c059a162338a3bfbd2e58be4', (req, res) => {
-  res.status(200).send('loaderio-6a14faf9c059a162338a3bfbd2e58be4');
+app.get('/loaderio-17975e4f418cb8a142e974eb5955bb5c', (req, res) => {
+  res.status(200).send('loaderio-17975e4f418cb8a142e974eb5955bb5c');
 });
 export const server = app.listen(PORT, (): void => {
   console.log(`Listening on port ${PORT}`);
